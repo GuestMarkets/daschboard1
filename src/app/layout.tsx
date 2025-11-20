@@ -1,8 +1,9 @@
 // app/layout.tsx  (SERVER COMPONENT — pas de "use client")
+
 import type { Metadata } from "next";
 import "./globals.css";
 
-// Si tu as un Providers client (redux/zustand/rtk-query, etc.)
+// Correction : bon chemin vers lib/store.tsx
 import { Providers } from "../../lib/store";
 
 export const metadata: Metadata = {
@@ -14,9 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <body className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-        {/* Tu peux garder tes pages qui importent directement Sidebar + TopBar */}
         <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
+
