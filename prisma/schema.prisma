@@ -1,0 +1,131 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "postgresql" // adapte si besoin (mysql, sqlite…)
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  USER
+  PROJECT_MANAGER
+  DEPARTMENT_MANAGER
+  SUPER_ADMIN
+}
+
+enum ReportStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  CHANGES_REQUESTED
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  INCIDENT
+  MEETING
+  OTHER
+}
+
+model Department {
+  id      Int     @id @default(autoincrement())
+  name    String
+  users   User[]
+  reports Report[]
+}
+
+model Project {
+  id      Int     @id @default(autoincrement())
+  name    String
+  users   User[]
+  reports Report[]
+}
+
+model Team {
+  id    Int     @id @default(autoincrement())
+  name  String
+  users User[]
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  name         String
+  email        String     @unique
+  role         UserRole   @default(USER)
+  departmentId Int?
+  projectId    Int?
+  teamId       Int?
+
+  department Department? @relation(fields: [departmentId], references: [id])
+  project    Project?    @relation(fields: [projectId], references: [id])
+  team       Team?       @relation(fields: [teamId], references: [id])
+
+  reportsAuthored Report[]         @relation("ReportAuthor")
+  reportRecipients ReportRecipient[]
+}
+
+model Report {
+  id          Int          @id @default(autoincrement())
+  title       String
+  type        ReportType
+  summary     String?
+  periodStart DateTime
+  periodEnd   DateTime
+  status      ReportStatus @default(DRAFT)
+
+  authorId Int
+  author   User @relation("ReportAuthor", fields: [authorId], references: [id])
+
+  projectId    Int?
+  departmentId Int?
+  project      Project?    @relation(fields: [projectId], references: [id])
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  files      ReportFile[]
+  comments   ReportComment[]
+  recipients ReportRecipient[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReportRecipient {
+  id          Int          @id @default(autoincrement())
+  reportId    Int
+  userId      Int
+  inboxStatus ReportStatus?
+  unread      Boolean      @default(true)
+  readAt      DateTime?
+
+  report Report @relation(fields: [reportId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model ReportFile {
+  id            Int    @id @default(autoincrement())
+  reportId      Int
+  originalName  String
+  mimeType      String
+  sizeBytes     Int
+  contentBytes  Bytes
+  uploadedAt    DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id])
+}
+
+model ReportComment {
+  id        Int      @id @default(autoincrement())
+  reportId  Int
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
