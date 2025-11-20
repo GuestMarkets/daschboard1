@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 // Correction : bon chemin vers lib/store.tsx
-import { Providers } from "../../lib/store";
+import { Providers } from "@/lib/store";
+
 
 export const metadata: Metadata = {
   title: "Guest Office",
@@ -20,4 +21,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
